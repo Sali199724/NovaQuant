@@ -74,25 +74,29 @@ if (envProjectId) {
 
 // Initializing Firebase Admin
 if (firebaseConfig) {
+  let serviceAccount: any = null;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_B64) {
+    try {
+      serviceAccount = JSON.parse(
+        Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_B64, "base64").toString("utf-8")
+      );
+    } catch (parseErr: any) {
+      console.error("[Server Auth] Failed to parse GOOGLE_SERVICE_ACCOUNT_B64:", parseErr.message);
+    }
+  }
+
   try {
     if (getApps().length === 0) {
       initializeApp({
+        credential: serviceAccount
+          ? admin.credential.cert(serviceAccount)
+          : admin.credential.applicationDefault(),
         projectId: firebaseConfig.projectId,
       });
       console.info("[Server Auth] Firebase Admin successfully initialized.");
     }
   } catch (adminErr: any) {
-    console.warn("[Server Auth] Firebase Admin credentials initialization fallback:", adminErr.message);
-    try {
-      if (getApps().length === 0) {
-        initializeApp({
-          projectId: firebaseConfig.projectId,
-        });
-        console.info("[Server Auth] Firebase Admin initialized in fallback context.");
-      }
-    } catch (fallbackErr: any) {
-      console.error("[Server Auth] Firebase Admin failed to initialize entirely:", fallbackErr);
-    }
+    console.error("[Server Auth] Firebase Admin failed to initialize:", adminErr.message);
   }
 }
 
