@@ -83,17 +83,8 @@ if (firebaseConfig) {
     } catch (parseErr: any) {
       console.error("[Server Auth] Failed to parse GOOGLE_SERVICE_ACCOUNT_B64:", parseErr.message);
     }
-  if (firebaseConfig) {
-  let serviceAccount: any = null;
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_B64) {
-    try {
-      serviceAccount = JSON.parse(
-        Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_B64, "base64").toString("utf-8")
-      );
-    } catch (parseErr: any) {
-      console.error("[Server Auth] Failed to parse GOOGLE_SERVICE_ACCOUNT_B64:", parseErr.message);
-    }
   }
+
   try {
     if (getApps().length === 0) {
       initializeApp({
