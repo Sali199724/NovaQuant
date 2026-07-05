@@ -29,10 +29,11 @@ export default defineConfig({
   schemaFilter: ["public"],
   dbCredentials: {
     host: sqlHost,
+    port: process.env.SQL_PORT ? parseInt(process.env.SQL_PORT) : 5432,
     user: user,
     password: password,
     database: sqlDbName,
-    ssl: false, // Typically false when connecting via Cloud SQL Auth Proxy
+    ssl: process.env.SQL_SSL === "true" ? { rejectUnauthorized: false } : false,
   },
   verbose: true,
 });

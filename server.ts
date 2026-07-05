@@ -8,8 +8,8 @@ import fs from "fs";
 import { GoogleGenAI, Type } from "@google/genai";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
-import admin from "firebase-admin";
-import { initializeApp, getApps } from "firebase-admin/app";
+
+import { initializeApp, getApps, cert, applicationDefault } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { Firestore } from "@google-cloud/firestore";
@@ -83,14 +83,21 @@ if (firebaseConfig) {
     } catch (parseErr: any) {
       console.error("[Server Auth] Failed to parse GOOGLE_SERVICE_ACCOUNT_B64:", parseErr.message);
     }
+  if (firebaseConfig) {
+  let serviceAccount: any = null;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_B64) {
+    try {
+      serviceAccount = JSON.parse(
+        Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_B64, "base64").toString("utf-8")
+      );
+    } catch (parseErr: any) {
+      console.error("[Server Auth] Failed to parse GOOGLE_SERVICE_ACCOUNT_B64:", parseErr.message);
+    }
   }
-
   try {
     if (getApps().length === 0) {
       initializeApp({
-        credential: serviceAccount
-          ? admin.credential.cert(serviceAccount)
-          : admin.credential.applicationDefault(),
+        credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
         projectId: firebaseConfig.projectId,
       });
       console.info("[Server Auth] Firebase Admin successfully initialized.");
