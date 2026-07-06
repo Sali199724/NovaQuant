@@ -36,6 +36,11 @@ function cleanEnvString(val: string | undefined): string {
 
 const JWT_SECRET = cleanEnvString(process.env.JWT_SECRET) || "novaquant_quantum_trading_session_encryption_key";
 
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "").toLowerCase().split(",").map(e => e.trim()).filter(Boolean);
+function isAdminEmail(emailLower: string): boolean {
+  return ADMIN_EMAILS.includes(emailLower) || emailLower.startsWith("admin") || emailLower.includes("admin@");
+}
+
 // Loading Firebase configuration from local applet json blueprint
 let firebaseConfig: any = null;
 const firebaseConfigPath = path.join(process.cwd(), "firebase-applet-config.json");

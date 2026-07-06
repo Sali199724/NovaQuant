@@ -583,7 +583,7 @@ export default function App() {
   const [apiKeyInput, setApiKeyInput] = useState<string>('');
   const [apiSecretInput, setApiSecretInput] = useState<string>('');
   const [showSecretKey, setShowSecretKey] = useState<boolean>(false);
-  const [useBinanceTestnet, setUseBinanceTestnet] = useState<boolean>(true);
+  const [useBinanceTestnet, setUseBinanceTestnet] = useState<boolean>(false);
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<string>('');
   const [maxRiskPerTrade, setMaxRiskPerTrade] = useState<number>(2);
   const [maxDailyLoss, setMaxDailyLoss] = useState<number>(5);
