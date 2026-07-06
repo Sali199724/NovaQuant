@@ -3483,15 +3483,9 @@ export default function App() {
                           {/* Environment selector */}
                           <div className="space-y-1">
                             <label className="sleek-label block text-[9.5px] text-slate-400 font-sans">Environment Mode</label>
-                            <select 
-                              disabled={binanceConnectionStatus === 'CONNECTED'}
-                              value={useBinanceTestnet ? "testnet" : "live"}
-                              onChange={(e) => setUseBinanceTestnet(e.target.value === "testnet")}
-                              className="w-full bg-slate-950 border border-slate-850 text-[#fbbf24] font-semibold text-xs rounded px-2.5 py-1.5 focus:outline-none focus:border-[#fbbf24] disabled:opacity-60"
-                            >
-                              <option value="live" className="text-amber-400">Binance Live (Production)</option>
-                              <option value="testnet" className="text-blue-400">Binance Futures Testnet (Sandbox)</option>
-                            </select>
+                            <div className="w-full bg-slate-950 border border-amber-800 text-[#fbbf24] font-semibold text-xs rounded px-2.5 py-1.5">
+                              Binance Live (Production)
+                            </div>
                           </div>
 
                           {/* API Key */}
