@@ -1863,6 +1863,32 @@ async function startServer() {
     return null;
   }
 
+
+  async function testBybitConnection(apiKey: string, apiSecret: string, isTestnet: boolean) {
+    const baseUrl = isTestnet ? "https://api-testnet.bybit.com" : "https://api.bybit.com";
+    const timestamp = Date.now().toString();
+    const recvWindow = "10000";
+    const queryString = "accountType=UNIFIED";
+    const signPayload = timestamp + apiKey + recvWindow + queryString;
+    const signature = crypto.createHmac("sha256", apiSecret).update(signPayload).digest("hex");
+
+    const response = await fetch(`${baseUrl}/v5/account/wallet-balance?${queryString}`, {
+      method: "GET",
+      headers: {
+        "X-BAPI-API-KEY": apiKey,
+        "X-BAPI-TIMESTAMP": timestamp,
+        "X-BAPI-RECV-WINDOW": recvWindow,
+        "X-BAPI-SIGN": signature,
+      }
+    });
+
+    const data: any = await response.json();
+    if (data.retCode !== 0) {
+      throw new Error(data.retMsg || "Bybit connection failed.");
+    }
+    return data;
+  }
+
   async function checkApiWithdrawalPermissionEnforced(apiKey: string, apiSecret: string, isTestnet: boolean): Promise<{ safe: boolean; reason?: string }> {
     if (isTestnet) {
       // Binance Futures Testnet keys of demo accounts do not enforce IP whitelists/access restrictions,
@@ -1996,6 +2022,39 @@ async function startServer() {
   // --- MULTI-USER SAAS BINANCE CREDENTIALS ENDPOINTS ---
 
   const handleSaveUserBinanceCredentials = async (req: any, res: any) => {
+    const exchange = (req.body.exchange || "binance").toLowerCase();
+    if (exchange === "bybit") {
+      try {
+        const userId = await getUserIdFromRequest(req);
+        if (!userId) {
+          return res.status(401).json({ success: false, error: "Unauthorized. Session signature missing." });
+        }
+        const apiKey = req.body.apiKey?.trim();
+        const apiSecret = req.body.apiSecret?.trim();
+        const isTestnet = req.body.isTestnet !== false;
+        if (!apiKey || !apiSecret) {
+          return res.status(400).json({ success: false, error: "Missing required credential parameters: apiKey and apiSecret." });
+        }
+        await testBybitConnection(apiKey, apiSecret, isTestnet);
+        const encryptedBinanceApiKey = encryptSecret(apiKey);
+        const encryptedBinanceApiSecret = encryptSecret(apiSecret);
+        const db = getAdminDb();
+        if (db) {
+          await db.collection("users").doc(userId).set({
+            encryptedBinanceApiKey,
+            encryptedBinanceApiSecret,
+            exchange: "bybit",
+            isTestnet,
+            tradingEnabled: true,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        }
+        return res.json({ success: true, message: "Bybit credentials saved and verified successfully." });
+      } catch (bybitErr: any) {
+        return res.status(400).json({ success: false, error: bybitErr.message || "Bybit connection failed." });
+      }
+    }
+
     try {
       const userId = await getUserIdFromRequest(req);
       if (!userId) {
@@ -2100,6 +2159,31 @@ async function startServer() {
   app.put(["/api/user/binance", "/api/user/binance/update"], handleSaveUserBinanceCredentials);
 
   const handleTestUserBinanceConnection = async (req: any, res: any) => {
+    const exchange = (req.body.exchange || req.query.exchange || "binance").toString().toLowerCase();
+    if (exchange === "bybit") {
+      try {
+        let apiKey = req.body.apiKey;
+        let apiSecret = req.body.apiSecret;
+        const isTestnet = req.body.isTestnet !== false;
+        if (!apiKey || !apiSecret) {
+          const userId = await getUserIdFromRequest(req);
+          if (!userId) {
+            return res.status(401).json({ success: false, error: "Unauthorized. No credentials provided to test." });
+          }
+          const creds = await getUserBinanceCredentials(userId);
+          if (!creds) {
+            return res.status(400).json({ success: false, error: "No saved credentials found to test. Please save them first." });
+          }
+          apiKey = creds.apiKey;
+          apiSecret = creds.apiSecret;
+        }
+        const data = await testBybitConnection(apiKey, apiSecret, isTestnet);
+        return res.json({ success: true, connected: true, exchange: "bybit", data });
+      } catch (bybitErr: any) {
+        return res.status(400).json({ success: false, connected: false, error: bybitErr.message || "Bybit connection failed." });
+      }
+    }
+
     try {
       const userId = await getUserIdFromRequest(req);
       let apiKey = req.body.apiKey;

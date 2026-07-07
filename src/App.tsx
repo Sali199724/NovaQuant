@@ -2257,6 +2257,7 @@ export default function App() {
           apiKey: apiKeyInput.trim(),
           apiSecret: apiSecretInput.trim(),
           isTestnet: useBinanceTestnet,
+          exchange: selectedExchange,
           tradingEnabled: activeWorkspace.isLive,
           riskSettings: {
             maxRiskPerTrade: maxRiskPerTrade,
