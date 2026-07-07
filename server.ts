@@ -1864,6 +1864,33 @@ async function startServer() {
   }
 
 
+
+  async function testBitgetConnection(apiKey: string, apiSecret: string, passphrase: string, isTestnet: boolean) {
+    const baseUrl = "https://api.bitget.com";
+    const timestamp = Date.now().toString();
+    const method = "GET";
+    const requestPath = "/api/v2/mix/account/accounts?productType=USDT-FUTURES";
+    const prehash = timestamp + method + requestPath;
+    const signature = crypto.createHmac("sha256", apiSecret).update(prehash).digest("base64");
+
+    const response = await fetch(`${baseUrl}${requestPath}`, {
+      method: "GET",
+      headers: {
+        "ACCESS-KEY": apiKey,
+        "ACCESS-SIGN": signature,
+        "ACCESS-TIMESTAMP": timestamp,
+        "ACCESS-PASSPHRASE": passphrase,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data: any = await response.json();
+    if (data.code !== "00000") {
+      throw new Error(data.msg || "Bitget connection failed.");
+    }
+    return data;
+  }
+
   async function testBybitConnection(apiKey: string, apiSecret: string, isTestnet: boolean) {
     const baseUrl = isTestnet ? "https://api-testnet.bybit.com" : "https://api.bybit.com";
     const timestamp = Date.now().toString();
@@ -2022,6 +2049,42 @@ async function startServer() {
   // --- MULTI-USER SAAS BINANCE CREDENTIALS ENDPOINTS ---
 
   const handleSaveUserBinanceCredentials = async (req: any, res: any) => {
+    const exchangeType2 = (req.body.exchange || "binance").toLowerCase();
+    if (exchangeType2 === "bitget") {
+      try {
+        const userId = await getUserIdFromRequest(req);
+        if (!userId) {
+          return res.status(401).json({ success: false, error: "Unauthorized. Session signature missing." });
+        }
+        const apiKey = req.body.apiKey?.trim();
+        const apiSecret = req.body.apiSecret?.trim();
+        const passphrase = req.body.passphrase?.trim();
+        const isTestnet = req.body.isTestnet !== false;
+        if (!apiKey || !apiSecret || !passphrase) {
+          return res.status(400).json({ success: false, error: "Missing required credential parameters: apiKey, apiSecret, or passphrase." });
+        }
+        await testBitgetConnection(apiKey, apiSecret, passphrase, isTestnet);
+        const encryptedBinanceApiKey = encryptSecret(apiKey);
+        const encryptedBinanceApiSecret = encryptSecret(apiSecret);
+        const encryptedPassphrase = encryptSecret(passphrase);
+        const db = getAdminDb();
+        if (db) {
+          await db.collection("users").doc(userId).set({
+            encryptedBinanceApiKey,
+            encryptedBinanceApiSecret,
+            encryptedPassphrase,
+            exchange: "bitget",
+            isTestnet,
+            tradingEnabled: true,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        }
+        return res.json({ success: true, message: "Bitget credentials saved and verified successfully." });
+      } catch (bitgetErr: any) {
+        return res.status(400).json({ success: false, error: bitgetErr.message || "Bitget connection failed." });
+      }
+    }
+
     const exchange = (req.body.exchange || "binance").toLowerCase();
     if (exchange === "bybit") {
       try {

@@ -585,6 +585,7 @@ export default function App() {
   const [showSecretKey, setShowSecretKey] = useState<boolean>(false);
   const [useBinanceTestnet, setUseBinanceTestnet] = useState<boolean>(false);
   const [selectedExchange, setSelectedExchange] = useState<string>("binance");
+  const [passphraseInput, setPassphraseInput] = useState<string>("");
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<string>('');
   const [maxRiskPerTrade, setMaxRiskPerTrade] = useState<number>(2);
   const [maxDailyLoss, setMaxDailyLoss] = useState<number>(5);
@@ -2258,6 +2259,7 @@ export default function App() {
           apiSecret: apiSecretInput.trim(),
           isTestnet: useBinanceTestnet,
           exchange: selectedExchange,
+          passphrase: passphraseInput.trim(),
           tradingEnabled: activeWorkspace.isLive,
           riskSettings: {
             maxRiskPerTrade: maxRiskPerTrade,
@@ -3534,6 +3536,20 @@ export default function App() {
                               )}
                             </div>
                           </div>
+
+                          {selectedExchange === "bitget" && (
+                            <div className="space-y-1">
+                              <label className="sleek-label block text-[9.5px] text-slate-400 font-sans">Bitget API Passphrase</label>
+                              <input
+                                type="password"
+                                value={passphraseInput}
+                                onChange={(e) => setPassphraseInput(e.target.value)}
+                                disabled={binanceConnectionStatus === 'CONNECTED'}
+                                placeholder="Input Bitget API Passphrase..."
+                                className="w-full bg-slate-950 border border-slate-850 text-slate-200 text-[11px] rounded px-3 py-1.5 focus:outline-none focus:border-[#fbbf24] font-mono disabled:opacity-65"
+                              />
+                            </div>
+                          )}
 
                           {/* Mode indicator */}
                           <div className={`flex items-center justify-between p-2 rounded border ${
