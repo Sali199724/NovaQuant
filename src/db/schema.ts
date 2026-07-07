@@ -21,6 +21,7 @@ export const exchanges = pgTable("exchanges", {
   exchangeName: text("exchange_name").default("Binance"),
   apiKey: text("api_key").notNull(), // encrypted
   secretKey: text("secret_key").notNull(), // encrypted
+  passphrase: text("passphrase"), // encrypted, only used by Bitget
   testnet: boolean("testnet").default(true),
   status: text("status").default("DISCONNECTED"), // 'SYNCING', 'CONNECTED', 'DISCONNECTED', 'FAILED'
   tradingEnabled: boolean("trading_enabled").default(true),

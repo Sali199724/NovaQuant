@@ -2078,6 +2078,7 @@ async function startServer() {
             tradingEnabled: true,
             updatedAt: new Date().toISOString()
           }, { merge: true });
+          await syncExchangeToPg(userId, userId, encryptedBinanceApiKey, encryptedBinanceApiSecret, isTestnet, "CONNECTED", true);
         }
         return res.json({ success: true, message: "Bitget credentials saved and verified successfully." });
       } catch (bitgetErr: any) {
@@ -2111,6 +2112,7 @@ async function startServer() {
             tradingEnabled: true,
             updatedAt: new Date().toISOString()
           }, { merge: true });
+          await syncExchangeToPg(userId, userId, encryptedBinanceApiKey, encryptedBinanceApiSecret, isTestnet, "CONNECTED", true);
         }
         return res.json({ success: true, message: "Bybit credentials saved and verified successfully." });
       } catch (bybitErr: any) {
