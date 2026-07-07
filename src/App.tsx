@@ -584,6 +584,7 @@ export default function App() {
   const [apiSecretInput, setApiSecretInput] = useState<string>('');
   const [showSecretKey, setShowSecretKey] = useState<boolean>(false);
   const [useBinanceTestnet, setUseBinanceTestnet] = useState<boolean>(false);
+  const [selectedExchange, setSelectedExchange] = useState<string>("binance");
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<string>('');
   const [maxRiskPerTrade, setMaxRiskPerTrade] = useState<number>(2);
   const [maxDailyLoss, setMaxDailyLoss] = useState<number>(5);
@@ -3483,9 +3484,16 @@ export default function App() {
                           {/* Environment selector */}
                           <div className="space-y-1">
                             <label className="sleek-label block text-[9.5px] text-slate-400 font-sans">Environment Mode</label>
-                            <div className="w-full bg-slate-950 border border-amber-800 text-[#fbbf24] font-semibold text-xs rounded px-2.5 py-1.5">
-                              Binance Live (Production)
-                            </div>
+                            <select
+                              disabled={binanceConnectionStatus === 'CONNECTED'}
+                              value={selectedExchange}
+                              onChange={(e) => setSelectedExchange(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-850 text-[#fbbf24] font-semibold text-xs rounded px-2.5 py-1.5 focus:outline-none focus:border-[#fbbf24] disabled:opacity-60"
+                            >
+                              <option value="binance">Binance Live (Production)</option>
+                              <option value="bybit">Bybit</option>
+                              <option value="bitget">Bitget</option>
+                            </select>
                           </div>
 
                           {/* API Key */}
