@@ -3476,11 +3476,15 @@ export default function App() {
                           {/* Exchange selector */}
                           <div className="space-y-1">
                             <label className="sleek-label block text-[9.5px] text-slate-400 font-sans">Exchange Provider</label>
-                            <select 
+                            <select
                               disabled={binanceConnectionStatus === 'CONNECTED'}
+                              value={selectedExchange}
+                              onChange={(e) => setSelectedExchange(e.target.value)}
                               className="w-full bg-slate-950 border border-slate-850 text-slate-200 text-xs rounded px-2.5 py-1.5 focus:outline-none focus:border-[#fbbf24] disabled:opacity-60"
                             >
-                              <option value="binance_futures">Binance Futures (Unified USD-M Contract)</option>
+                              <option value="binance">Binance Futures (Unified USD-M Contract)</option>
+                              <option value="bybit">Bybit (USDT Perpetual)</option>
+                              <option value="bitget">Bitget (USDT-M Futures)</option>
                             </select>
                           </div>
 
@@ -3489,13 +3493,12 @@ export default function App() {
                             <label className="sleek-label block text-[9.5px] text-slate-400 font-sans">Environment Mode</label>
                             <select
                               disabled={binanceConnectionStatus === 'CONNECTED'}
-                              value={selectedExchange}
-                              onChange={(e) => setSelectedExchange(e.target.value)}
+                              value={useBinanceTestnet ? "testnet" : "live"}
+                              onChange={(e) => setUseBinanceTestnet(e.target.value === "testnet")}
                               className="w-full bg-slate-950 border border-slate-850 text-[#fbbf24] font-semibold text-xs rounded px-2.5 py-1.5 focus:outline-none focus:border-[#fbbf24] disabled:opacity-60"
                             >
-                              <option value="binance">Binance Live (Production)</option>
-                              <option value="bybit">Bybit</option>
-                              <option value="bitget">Bitget</option>
+                              <option value="live">Live (Production)</option>
+                              <option value="testnet">Testnet (Sandbox)</option>
                             </select>
                           </div>
 
